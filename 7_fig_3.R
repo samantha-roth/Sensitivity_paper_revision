@@ -1,0 +1,107 @@
+# This script plots the traceplot (Figure 3 of the paper)
+
+# Remove all existing environment and plots
+rm(list = ls())
+graphics.off()
+
+source("0_library.R")
+
+# Load the required package for plotting
+library(RColorBrewer)
+
+# Sizes used for standard Sobol traceplot
+Size_S <- c(seq(40,1000,by=40),seq(1000,5000,by=1000))
+# Sizes used for Kriging traceplot
+Size_K <- c(5:10,seq(12,100,by=2))
+# Sizes used for AKMCS traceplot
+Size_A <- c(3:100)
+# Sizes used for BASS traceplot
+Size_B <- c(5:10,seq(12,100,by=2))
+
+# Load the saved sensitivity indices from script 5
+load("./Ranking_Data/5D/Traceplot/T_S")
+load("./Ranking_Data/5D/Traceplot/T_S_high")
+load("./Ranking_Data/5D/Traceplot/T_S_low")
+
+load("./Ranking_Data/5D/Traceplot/T_K")
+load("./Ranking_Data/5D/Traceplot/T_B")
+load("./Ranking_Data/5D/Traceplot/T_A")
+
+# Load the convergence size of the 5D test model
+load("./Ranking_Data/Sobol_convergencesize")
+C_S <- Sobol_convergesize[2]
+load("./Ranking_Data/5D/Kriging/Kriging_size")
+load("./Ranking_Data/5D/Kriging/y_true")
+C_K <- Kriging_size
+load("./Ranking_Data/5D/AKMCS/x")
+C_A <- dim(x)[1]
+load("./Ranking_Data/5D/BASS/BASS_size")
+C_B <- sample_size
+
+# Create a folder to save figures
+folder <- "./New_Figures"
+if (!dir.exists(folder)){
+  dir.create(folder, recursive = TRUE)
+}
+
+# 4 panels of trace plots + 1 line showing convergence locations
+pdf(file = paste("./New_Figures/Figure_3.pdf",sep=""),width = 18,height = 12)
+layout(matrix(c(1,2,3,4,5,5), nrow = 3, ncol = 2, byrow = TRUE))
+par(mar=c(5,6,6,2.6))
+Yrange <- c(min(T_S,T_A,T_B,T_K)-0.05,max(T_S,T_A,T_B,T_K)+0.05)
+plot(Size_S,T_S,type="l",col="seagreen",xlab="Sample size",ylab="Sensitivity",
+     ylim=Yrange,cex.axis=2,cex.lab=2.5)
+lines(Size_S,T_S_high,lty = 2, col = "seagreen")
+lines(Size_S,T_S_low,lty = 2, col = "seagreen")
+legend("topright",lty = c(1,2), col = c("seagreen","seagreen"), 
+       legend = c("Standard Sobol","95% CI"), bty = "n", cex = 2.5)
+mtext("a",side = 3, line = 1, at = 0, cex = 2)
+arrows(C_S,0.95,C_S,0.75,length = 0.1, col = "seagreen")
+
+par(mar=c(5,6,6,2.6))
+plot(Size_K,T_K[1, ],type="l",col="purple",ylim = Yrange,
+     xlab="Sample size",ylab="Sensitivity",cex.axis=2,cex.lab=2.5)
+for (i in 2:5){
+  lines(Size_K,T_K[i, ],col="purple")
+}
+legend("topright",lty = 1, col = "purple", legend = "Kriging", bty = "n", cex = 2.5)
+mtext("b",side = 3, line = 1, at = min(Size_K), cex = 2)
+arrows(C_K,0.95,C_K,0.75,length = 0.1,col="purple")
+abline(h = T_S[30], lty = 2, lwd = 0.5)
+
+par(mar=c(5,6,2.6,2.6))
+plot(Size_B,T_B[1, ],type="l",col="blue",ylim = Yrange,
+     xlab="Sample size",ylab="Sensitivity",cex.axis=2,cex.lab=2.5)
+for (i in 2:5){
+  lines(Size_B,T_B[i, ],col="blue")
+}
+legend("topright",lty = 1, col = "blue", legend = "BASS", bty = "n", cex = 2.5)
+mtext("c",side = 3, line = 1, at = min(Size_B), cex = 2)
+arrows(C_B,0.95,C_B,0.75,length = 0.1,col="blue")
+abline(h = T_S[30], lty = 2, lwd = 0.5)
+
+par(mar=c(5,6,2.6,2.6))
+plot(Size_A,T_A[1, ],type="l",col="red",ylim = Yrange,
+     xlab="Sample size",ylab="Sensitivity",cex.axis=2,cex.lab=2.5)
+for (i in 2:5){
+  lines(Size_A,T_A[i, ],col="red")
+}
+legend("topright",lty = 1, col = "red", legend = "AKMCS", bty = "n", cex = 2.5)
+mtext("d",side = 3, line = 1, at = min(Size_A), cex = 2)
+arrows(C_A,0.95,C_A,0.75,length = 0.1,col="red")
+abline(h = T_S[30], lty = 2, lwd = 0.5)
+
+plot(0,0,type = "n", xaxt = "n", yaxt = "n", bty="n", xlab = "", ylab="",
+     xlim=c(10, 5000), ylim=c(0, 0.7),log="x")
+axis(1, at = c(10,100,1000,10000),labels = c(10,100,1000,10000), pos = 0.5,
+     cex.axis = 2.3, cex.lab = 2.5)
+points(C_S, 0.5, col = "seagreen", pch = 20, cex = 2)
+points(C_K, 0.5, col = "purple", pch = 20, cex = 2)
+points(C_B, 0.5, col = "blue", pch = 20, cex = 2)
+points(C_A, 0.5, col = "red", pch = 20, cex = 2)
+text(C_S, 0.6, labels = "Sobol", col = "seagreen", cex = 2.5)
+text(C_K, 0.6, labels = "Kriging", col = "purple", cex = 2.5)
+text(C_B, 0.4, labels = "BASS", col = "blue", cex = 2.5)
+text(C_A, 0.4, labels = "AKMCS", col = "red", cex = 2.5)
+text(200, 0.2, labels = "Required sample size for convergence", col = "black", cex = 2.5)
+dev.off()
