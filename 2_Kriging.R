@@ -12,7 +12,7 @@ rm(list = ls())
 graphics.off()
 
 # Set a working directory, please set it to your own working folder when testing
-setwd("/storage/group/pches/default/users/hxy46/Sensitivity")
+setwd("/Users/f007f8t/Documents/GitHub/Sensitivity_paper_revision")
 
 # Load the required packages
 source("0_library.R")
