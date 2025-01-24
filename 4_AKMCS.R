@@ -10,6 +10,9 @@ source("0_library.R")
 
 # Define the test model in each dimension, apply AKMCS and perform the Sobol analysis
 for (k in 1:6){
+  
+  set.seed(4)
+  
   # model dimension
   d <- D[k]
   
